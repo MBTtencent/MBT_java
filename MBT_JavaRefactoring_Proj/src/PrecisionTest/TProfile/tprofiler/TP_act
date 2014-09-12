@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+#encoding:utf-8
+
+import os
+import sys
+import xlwt
+import time
+import paramiko
+import subprocess
+import ConfigParser
+
+IP = ''
+PORT = 0
+USER = ''
+PWD = ''
+WORKDIR = ''
+
+FUNC_INFO = {} #key = addr; value=(id,name,callee[])
+
+def elf2asm(filename):
+	cmd = 'objdump -d ' + filename + ' > ' + filename + '.asm.tmp'
+	if(os.system(cmd)):
+		print 'elf2asm error.\n'
+		sys.exit(1)
+#	print filename + '.asm was generated.\n'
+	return True
+
+	
+def getDefineInfo(funcname):
+	cmd = 'c++filt ' + funcname
+	defineInfo = subprocess.Popen(cmd, stdout = subprocess.PIPE ,shell = True)	#性能很差
+	return defineInfo.stdout.read()
+
+def uploadData(filename,remote):
+	socks = (IP,PORT)
+	ssh = paramiko.Transport(socks)
+	ssh.connect(username = USER,password = PSW)
+	sftp = paramiko.SFTPClient.from_transport(ssh)
+	remote = WORKDIR + remote
+	sftp.put(filename,remote)
+	return True
+	
+if __name__ == '__main__':
+	
+	config = ConfigParser.ConfigParser()
+	config.read("config.ini")
+	try:
+		savename = config.get('call relation','result file')
+		filename = config.get('binary','path to binary')
+		
+		VERSION = config.get('version','code version')
+
+		if 'yes' == config.get('call relation','static call'):
+			STATIC = True
+		else:
+			STATIC = False
+
+		if 'yes' == config.get('call relation','dynamic call'):
+			DYNAMIC = True
+		else:
+			DYNAMIC = False
+		
+		if 'yes' == config.get('call relation','upload to web'):
+			UPLOAD = True
+			IP = config.get('data server','ip')
+			PORT = int(config.get('data server','port'))
+			USER = config.get('data server','user')
+			PSW = config.get('data server','psw')
+			WORKDIR = config.get('data server','work dir')
+		else:
+			UPLOAD = False
+
+	except ConfigParser.NoSectionError:
+		print '\nconfig.ini --> No SectionError.\n'
+		sys.exit(1)
+				
+	if(os.path.isfile(filename)):
+		if(elf2asm(filename)):
+			asm_f  = open(filename + '.asm.tmp')
+	else:
+		print 'No such file!'
+		sys.exit(1)
+	
+#	print asm_f
+	
+	addr = ''
+	id = 0
+	callee = []
+	
+	for line in asm_f:
+		if(line[0] != ' ' and line.find('<') != -1):
+			addr = line.split('<')[0].strip()
+			name = line.split('<')[1].split('>')[0]
+
+			if name.find('@plt') != -1:
+				name = getDefineInfo(name.split('@plt')[0]) + '@plt'
+			else:
+				name = getDefineInfo(name)
+			id = id + 1
+			callee = []
+			FUNC_INFO[addr] = (id,name,callee)
+	
+		elif(line.find('call ') != -1 and line.find('<') != -1): 	#跳过 call %eax 之类的调用
+			callee_addr = line.split('call ')[1].split('<')[0].strip()
+
+			if(len(callee_addr) == 7):	#调用地址为4*7位 首位补0
+				callee_addr = '0' + callee_addr
+			
+			callee_name = line.split('call ')[1].split('<')[1].split('>')[0]
+			
+			FUNC_INFO[addr][2].append((callee_addr,callee_name))
+	
+	asm_f.close()
+	os.remove(filename + '.asm.tmp')
+
+	if STATIC and DYNAMIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1][0] == '.':	#过滤.L19格式的函数名 
+				del FUNC_INFO[key]
+				
+	elif STATIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1].find('@plt') != -1 or FUNC_INFO[key][1][0] == '.':
+				del FUNC_INFO[key]
+				
+	elif DYNAMIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1].find('@plt') == -1:
+				del FUNC_INFO[key]
+		
+	
+	#write Function Info  into xls files
+	print '生成Excel文件,处理Functions Sheet...\n'
+	file = xlwt.Workbook()
+	table_f = file.add_sheet('Functions',cell_overwrite_ok=True)
+	style = xlwt.XFStyle()
+	font = xlwt.Font()
+	font.name = 'Times New Roman'
+	font.bold = True
+	style.font = font
+	table_f.write(0,0,'Function ID',style)
+	table_f.write(0,1,'Declaration Name',style)
+	table_f.write(0,2,'Declaration Position',style)
+	table_f.write(0,3,'Functional Description',style)
+	table_f.write(0,4,'Callee Count',style)
+	table_f.write(0,5,'Be Called Times',style)	 
+	table_f.write(0,6,'ID of Callee Functions',style)	 
+	table_f.write(0,7,'ID of Be Called Functions',style)
+
+	font.bold = False
+	style.font = font
+	
+	row = 0 
+	
+	for key in FUNC_INFO.keys():
+		row = row + 1
+		callee_id = []
+		table_f.write(row,0,FUNC_INFO[key][0],style)
+		table_f.write(row,1,FUNC_INFO[key][1],style)
+		table_f.write(row,4,len(FUNC_INFO[key][2]),style)
+	
+		if(len(FUNC_INFO[key][2]) == 0):	#没有调用其它函数，直接填0
+			table_f.write(row,6,0,style)
+		else:
+			for i in range(len(FUNC_INFO[key][2])):
+				if(FUNC_INFO.has_key(FUNC_INFO[key][2][i][0])):		#抛弃在代码段中找不到定义的函数
+					callee_id.append(FUNC_INFO[FUNC_INFO[key][2][i][0]][0])
+	
+			table_f.write(row,6,str(callee_id),style)
+    
+	file.save(savename)
+	print ('%s生成完毕.\n' %savename)
+
+	if UPLOAD:
+		date = time.strftime('%Y%m%d',time.localtime(time.time()))
+		timeInfo = time.strftime('%H%M%S',time.localtime(time.time()))
+		fileInfo = 'r' + VERSION + '_' + date + '_' + timeInfo
+		remotename = 'call_' + fileInfo +'.xls'
+		if uploadData(savename,remotename):
+			print "文件上传完毕.\n"
+		

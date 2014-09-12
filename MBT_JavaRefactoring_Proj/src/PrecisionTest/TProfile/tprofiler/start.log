@@ -1,0 +1,29 @@
+2012-11-28 15:59:01 --> env LD_PRELOAD="/usr/local/lib/libtcmalloc_and_profiler.so" CPUPROFILE=/home/angel/paris/tprofiler/demo.prof CPUPROFILE_FREQUENCY=100 CPUPROFILE_REALTIME=1 HEAPPROFILE=/home/angel/paris/tprofiler/demo.hprof HEAPCHECK= PPROF_PATH= /home/angel/paris/tprofiler/demo  >> start.log 2>&1
+Starting tracking the heap
+Turning perftools heap leak checking off
+PROFILE: interrupts/evictions/bytes = 356/42/2096
+Dumping heap profile to /home/angel/paris/tprofiler/demo.hprof.0001.heap (Exiting)
+i = 0
+Stupid computing return : 1
+Smart computing return : 3
+2012-11-28 16:50:34 --> env LD_PRELOAD="/usr/local/lib/libtcmalloc_and_profiler.so" CPUPROFILE=/home/angel/paris/tprofiler/zone.prof CPUPROFILE_FREQUENCY=100 CPUPROFILE_REALTIME=1 HEAPPROFILE=/home/angel/paris/tprofiler/zone.hprof HEAPCHECK= PPROF_PATH= /usr/local/angel/zonesvr/bin/zonesvr /usr/local/angel/zonesvr/conf/zonesvr.ini 600 >> start.log 2>&1
+Starting tracking the heap
+Turning perftools heap leak checking off
+PROFILE: interrupts/evictions/bytes = 0/0/32
+Dumping heap profile to /home/angel/paris/tprofiler/zone.hprof.0001.heap (Exiting)
+启动失败，请检查zonesvr服务进程是否已经存在
+2012-11-28 17:06:11 --> env LD_PRELOAD="/usr/local/lib/libtcmalloc.so" CPUPROFILE= CPUPROFILE_FREQUENCY= CPUPROFILE_REALTIME= HEAPPROFILE=/home/angel/paris/tprofiler/zone.hprof HEAPCHECK=normal PPROF_PATH=/usr/local/bin/pprof /usr/local/angel/zonesvr/bin/zonesvr /usr/local/angel/zonesvr/conf/zonesvr.ini 600 > /home/angel/paris/tprofiler/heap_check.log 2>&1
+2012-11-28 17:36:59 --> env LD_PRELOAD="/usr/local/lib/libprofiler.so" CPUPROFILE=/home/angel/paris/tprofiler/zone.prof CPUPROFILE_FREQUENCY=100 CPUPROFILE_REALTIME=1 HEAPPROFILE= HEAPCHECK= PPROF_PATH= /usr/local/angel/zonesvr/bin/zonesvr /usr/local/angel/zonesvr/conf/zonesvr.ini 600 >> start.log 2>&1
+PROFILE: interrupts/evictions/bytes = 0/0/32
+sizeof(DBAngelInfo): 316
+2012-11-28 17:40:46 --> env LD_PRELOAD="/usr/local/lib/libtcmalloc_and_profiler.so" CPUPROFILE=/home/angel/paris/tprofiler/zone.prof CPUPROFILE_FREQUENCY=100 CPUPROFILE_REALTIME=1 HEAPPROFILE=/home/angel/paris/tprofiler/zone.hprof HEAPCHECK= PPROF_PATH= /usr/local/angel/zonesvr/bin/zonesvr /usr/local/angel/zonesvr/conf/zonesvr.ini 600 >> start.log 2>&1
+Starting tracking the heap
+Turning perftools heap leak checking off
+PROFILE: interrupts/evictions/bytes = 0/0/32
+Dumping heap profile to /home/angel/paris/tprofiler/zone.hprof.0001.heap (Exiting)
+sizeof(DBAngelInfo): 316
+2012-12-31 11:26:55 --> env LD_PRELOAD="/usr/local/lib/libtcmalloc_and_profiler.so" CPUPROFILE=/root/paris/tprofiler/demo.prof CPUPROFILE_FREQUENCY=100 CPUPROFILE_REALTIME=1 HEAPPROFILE=/root/paris/tprofiler/demo.hprof HEAPCHECK= PPROF_PATH= /root/paris/tprofiler/demo  >> start.log 2>&1
+ERROR: ld.so: object '/usr/local/lib/libtcmalloc_and_profiler.so' from LD_PRELOAD cannot be preloaded: ignored.
+i = 0
+Stupid computing return : 1
+Smart computing return : 3

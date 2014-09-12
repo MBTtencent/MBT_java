@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scripts>
+	<script tag="a" id="1"><![CDATA[]]></script>
+	<script tag="b" id="2"><![CDATA[]]></script>
+	<script tag="c" id="3"><![CDATA[]]></script>
+	<script tag="a" id="4"><![CDATA[]]></script>
+	<script tag="a" id="5"><![CDATA[]]></script>
+	<script tag="b" id="6"><![CDATA[]]></script>
+</scripts>

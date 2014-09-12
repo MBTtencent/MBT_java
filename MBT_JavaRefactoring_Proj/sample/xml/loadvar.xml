@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vars>
+	<var tag="a" id="1">
+		<name><![CDATA[varA]]></name>
+		<value><![CDATA[a]]></value>
+		<type><![CDATA[string]]></type>
+		<area><![CDATA[local]]></area>
+	</var>
+	<var tag="a" id="2">
+		<name><![CDATA[varB]]></name>
+		<value><![CDATA[2222.222]]></value>
+		<type><![CDATA[number]]></type>
+		<area><![CDATA[global]]></area>
+	</var>
+	<var tag="b" id="3">
+		<name><![CDATA[varC]]></name>
+		<value><![CDATA[ccc]]></value>
+		<type><![CDATA[string]]></type>
+		<area><![CDATA[global]]></area>
+	</var>
+	<var tag="b" id="4">
+		<name><![CDATA[varD]]></name>
+		<value><![CDATA[4]]></value>
+		<type><![CDATA[number]]></type>
+		<area><![CDATA[global]]></area>
+	</var>
+	<var tag="a" id="5">
+		<name><![CDATA[varE]]></name>
+		<value><![CDATA[55555]]></value>
+		<type><![CDATA[string]]></type>
+		<area><![CDATA[local]]></area>
+	</var>
+</vars>

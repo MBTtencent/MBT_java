@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dbverifies>
+	<dbverify tag="a" id="1">
+		<sql>
+			<select><![CDATA[Ftrade_state]]></select>
+			<from><![CDATA[unp_deal.t_trade_${varTableId}]]></from>
+			<where><![CDATA[Fdeal_id=${varDealId64}]]></where>
+			<groupby><![CDATA[]]></groupby>
+			<having><![CDATA[]]></having>
+			<orderby><![CDATA[Ftrade_id desc]]></orderby>
+		</sql>
+		<value><![CDATA['7']]></value>
+		<entity><![CDATA[DbEntity]]></entity>
+	</dbverify>
+	<dbverify tag="b" id="2">
+		<sql>
+			<select><![CDATA[Ftrade_state,Ftrade_property]]></select>
+			<from><![CDATA[unp_deal.t_trade_${varTableId}]]></from>
+			<where><![CDATA[Fdeal_id=${varDealId64}]]></where>
+			<groupby><![CDATA[]]></groupby>
+			<having><![CDATA[]]></having>
+			<orderby><![CDATA[Ftrade_id desc]]></orderby>
+		</sql>
+		<value><![CDATA['3','131072']]></value>
+		<entity><![CDATA[DbEntity]]></entity>
+	</dbverify>
+</dbverifies>

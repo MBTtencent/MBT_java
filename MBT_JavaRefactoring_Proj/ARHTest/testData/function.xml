@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<scripts>
+	<script tag="PreDataImport" id="1"><![CDATA[import string]]></script>
+	<script tag="PreDataImport" id="2"><![CDATA[import time]]></script>
+	<script tag="PreDataImport" id="3"><![CDATA[import random]]></script>
+	<script tag="PreDataLogging" id="4"><![CDATA[logging.setLogLevel("DEBUG")]]></script>
+	<script tag="PreDataSeptable" id="5"><![CDATA[varId = int(inBuyerId) % int(inTableNum)]]></script>
+	<script tag="PreDataSeptable" id="6"><![CDATA[logging.info("varId: " + str(varId))]]></script>
+	<script tag="PreDataSeptable" id="7"><![CDATA[varTableId = ('%0' + str(len(inTableNum)) + 'd') % varId]]></script>
+	<script tag="PreDataSeptable" id="8"><![CDATA[logging.info("table id: " + str(varTableId))]]></script>
+	<script tag="DealAoCreateDealLogging" id="9"><![CDATA[logging.println("define global")]]></script>
+	<script tag="DealAoCreateGetSeqId" id="10"><![CDATA[def getSeqId():]]></script>
+	<script tag="DealAoCreateGetSeqId" id="11"><![CDATA[    global v_seqId]]></script>
+	<script tag="DealAoCreateGetSeqId" id="12"><![CDATA[    v_seqId = v_seqId + 1]]></script>
+	<script tag="DealAoCreateGetSeqId" id="13"><![CDATA[    return str(v_seqId)]]></script>
+	<script tag="DealAoCreateLogging" id="14"><![CDATA[logging.println("v_seqId"+str(v_seqId))]]></script>
+	<script tag="DealAoCreateLogging" id="15"><![CDATA[logging.info(varDealSeq)]]></script>
+	<script tag="DealAoCreateLogging" id="16"><![CDATA[logging.info(varDealmd5)]]></script>
+</scripts>

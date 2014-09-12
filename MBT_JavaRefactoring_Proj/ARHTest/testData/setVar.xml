@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vars>
+	<var tag="preData" id="1">
+		<name>inSellerId</name>
+		<value>1105788698</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="preData" id="2">
+		<name>inBuyerId</name>
+		<value>634035710</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="preData" id="3">
+		<name>tSellerId</name>
+		<value>1105788698</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="preData" id="4">
+		<name>tBuyerId</name>
+		<value>634035710</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="preData" id="5">
+		<name>tBuyerId2</name>
+		<value>634035711</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="PreDataSeptable" id="6">
+		<name>inTableNum</name>
+		<value>1024</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreate" id="7">
+		<name>varDealSeq</name>
+		<value>str(random.randint(2000000, 8000000)+random.randint(1, 1000000))</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreate" id="8">
+		<name>varDealmd5</name>
+		<value>str(int(time.mktime(time.localtime()))+random.randint(9000000, 10000000))</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreate" id="9">
+		<name>inDealProperty1</name>
+		<value>128</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreate" id="10">
+		<name>inDealType</name>
+		<value>1</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreateVerifyvarBResultCode" id="11">
+		<name>varBResultCode</name>
+		<value>0</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="DealAoCreateGetSeqId" id="12">
+		<name>v_seqId</name>
+		<value>0</value>
+		<type>number</type>
+		<area>global</area>
+	</var>	
+	<var tag="DealAoCreatevarRespvarDealId" id="13">
+		<name>varDealId</name>
+		<value>mVarRecvDealAoCreateDealResp.getDealInfo().getDealId().getValue()</value>
+		<type>script</type>
+		<area>global</area>
+	</var>	
+	<var tag="DealAoCreatevarRespvarDealId64" id="14">
+		<name>varDealId64</name>
+		<value>mVarRecvDealAoCreateDealResp.getDealInfo().getDealId64().getValue()</value>
+		<type>script</type>
+		<area>global</area>
+	</var>	
+	<var tag="DealAoCreateRespvarPayTotalFee" id="15">
+		<name>varPayTotalFee</name>
+		<value>mVarRecvDealAoCreateDealResp.getDealInfo().getPayInfoList().getPayInfoList().get(0).getPayTotalFee().getValue()</value>
+		<type>script</type>
+		<area>global</area>
+	</var>	
+	<var tag="DealAoCreatevarRespvarPayDealId" id="16">
+		<name>varPayDealId</name>
+		<value>mVarRecvDealAoCreateDealResp.getDealInfo().getPayInfoList().getPayInfoList().get(0).getPayDealId().getValue()</value>
+		<type>script</type>
+		<area>global</area>
+	</var>	
+	<var tag="CreateDealQueryTradeSetVar" id="17">
+		<name>varFtrade_id1</name>
+		<value>varFtrade_id</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="CreateDealQueryTradeSetVar" id="18">
+		<name>varFtrade_state1</name>
+		<value>varFtrade_state</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="CreateDealQueryTradeSetVar" id="19">
+		<name>varFtrade_id2</name>
+		<value>varFtrade_id</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="CreateDealQueryTradeSetVar" id="20">
+		<name>varFtrade_state2</name>
+		<value>varFtrade_state</value>
+		<type>script</type>
+		<area>global</area>
+	</var>
+	<var tag="QueryTradeTwoPaymentSetVar" id="21">
+		<name>varOperatorRole</name>
+		<value>1</value>
+		<type>string</type>
+		<area>global</area>
+	</var>
+	<var tag="PaymentMarkShippingSetVar" id="22">
+		<name>varOperatorRole</name>
+		<value>2</value>
+		<type>string</type>
+		<area>local</area>
+	</var>
+	
+</vars>

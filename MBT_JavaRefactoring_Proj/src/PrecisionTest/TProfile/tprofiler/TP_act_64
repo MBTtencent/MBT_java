@@ -1,0 +1,196 @@
+#!/usr/bin/env python
+#encoding:utf-8
+
+import os
+import sys
+import xlwt
+import time
+import paramiko
+import subprocess
+import ConfigParser
+import commands
+
+IP = ''
+PORT = 0
+USER = ''
+PWD = ''
+WORKDIR = ''
+
+FUNC_INFO = {} #key = addr; value=(id,name,callee[])
+
+def elf2asm(filename):
+	cmd = 'objdump -d ' + filename + ' > ' + filename + '.asm.tmp'
+	if(os.system(cmd)):
+		print 'elf2asm error.\n'
+		sys.exit(1)
+#	print filename + '.asm was generated.\n'
+	return True
+
+	
+def getDefineInfo(funcname):
+	cmd = 'c++filt ' + funcname
+	defineInfo = subprocess.Popen(cmd, stdout = subprocess.PIPE ,shell = True)	#性能很差
+	return defineInfo.stdout.read()
+
+def uploadData(filename,remote):
+	socks = (IP,PORT)
+	ssh = paramiko.Transport(socks)
+	ssh.connect(username = USER,password = PSW)
+	sftp = paramiko.SFTPClient.from_transport(ssh)
+	remote = WORKDIR + remote
+	sftp.put(filename,remote)
+	return True
+	
+if __name__ == '__main__':
+	
+	config = ConfigParser.ConfigParser()
+	config.read("config.ini")
+	try:
+		savename = config.get('call relation','result file')
+		filename = config.get('binary','path to binary')
+		
+		VERSION = config.get('version','code version')
+		modelname = config.get('version','model name')
+		businessname = config.get('version','business name')
+		
+		if 'yes' == config.get('call relation','add to db'):
+			DB = True
+		else:
+			DB = False
+
+		if 'yes' == config.get('call relation', 'image'):
+			IMAGE = True
+		else:
+			IMAGE = False
+		
+		if 'yes' == config.get('call relation','static call'):
+			STATIC = True
+		else:
+			STATIC = False
+
+		if 'yes' == config.get('call relation','dynamic call'):
+			DYNAMIC = True
+		else:
+			DYNAMIC = False
+		
+		if 'yes' == config.get('call relation','upload to web'):
+			UPLOAD = True
+			IP = config.get('data server','ip')
+			PORT = int(config.get('data server','port'))
+			USER = config.get('data server','user')
+			PSW = config.get('data server','psw')
+			WORKDIR = config.get('data server','work dir')
+		else:
+			UPLOAD = False
+
+	except ConfigParser.NoSectionError:
+		print '\nconfig.ini --> No SectionError.\n'
+		sys.exit(1)
+				
+	if(os.path.isfile(filename)):
+		if(elf2asm(filename)):
+			asm_f  = open(filename + '.asm.tmp')
+	else:
+		print 'No such file!'
+		sys.exit(1)
+	
+#	print asm_f
+	
+	addr = ''
+	id = 0
+	callee = []
+	
+	for line in asm_f:
+		if(line[0] != ' ' and line.find('<') != -1):
+			addr = line.split('<')[0].strip()
+			name = line.split('<')[1].split('>')[0]
+
+			if name.find('@plt') != -1:
+				name = getDefineInfo(name.split('@plt')[0])# + '@plt'
+			else:
+				name = getDefineInfo(name)
+			id = id + 1
+			callee = []
+			FUNC_INFO[addr] = (id,name,callee)
+	
+		elif(line.find('callq ') != -1 and line.find('<') != -1): 	#跳过 call %eax 之类的调用
+			callee_addr = line.split('callq ')[1].split('<')[0].strip()
+
+			addZero = ''
+			if(len(callee_addr) < 16):	#调用地址为4*7位 首位补0
+				for i in range(16 - len(callee_addr)):
+					addZero = '0' + addZero
+				callee_addr = addZero + callee_addr
+
+			callee_name = line.split('callq ')[1].split('<')[1].split('>')[0]
+			
+			FUNC_INFO[addr][2].append((callee_addr,callee_name))
+	
+	asm_f.close()
+	os.remove(filename + '.asm.tmp')
+
+	if STATIC and DYNAMIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1][0] == '.':	#过滤.L19格式的函数名 
+				del FUNC_INFO[key]
+				
+	elif STATIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1].find('@plt') != -1 or FUNC_INFO[key][1][0] == '.' or FUNC_INFO[key][1].startswith('std::') or FUNC_INFO[key][1].startswith('__'):
+				del FUNC_INFO[key]
+				
+	elif DYNAMIC:
+		for key in FUNC_INFO.keys():
+			if FUNC_INFO[key][1].find('@plt') == -1:
+				del FUNC_INFO[key]
+		
+	#
+	# write file
+	# function ID, function
+	#
+	funDataFile  = open(filename + '.data', 'w')
+	for key in FUNC_INFO.keys():
+		if (len(FUNC_INFO[key][2]) == 0):
+			funDataFile.write(str(FUNC_INFO[key][0]) + "\t");
+			funDataFile.write(FUNC_INFO[key][1].strip() + "\t");
+			funDataFile.write(str(len(FUNC_INFO[key][2])) + "\t");
+			funDataFile.write("0");
+			funDataFile.write('\n');
+		else:
+			for i in range(len(FUNC_INFO[key][2])):
+				if(FUNC_INFO.has_key(FUNC_INFO[key][2][i][0])):
+					funDataFile.write(str(FUNC_INFO[key][0]) + "\t");
+					funDataFile.write(FUNC_INFO[key][1].strip() + "\t");
+					funDataFile.write(str(len(FUNC_INFO[key][2])) + "\t");
+					funDataFile.write(str(FUNC_INFO[FUNC_INFO[key][2][i][0]][0]));
+					funDataFile.write('\n');
+
+	funDataFile.close()
+	
+	# write data into database
+	if DB:
+		commnad = 'sh ../../funtree/shell/db/main.sh ' + businessname + ' ' + modelname + ' ' + filename + '.data'
+		#print commands.getoutput(command)
+		if 'Finished...' == commands.getoutput(command):
+			print 'Finished to write function relation into database.'
+		else:
+			print 'Some errors in write function relation into database.'
+		
+	
+	if IMAGE:
+		command = 'sh ../../funtree/shell/dot/gendot.sh ' + filename + '.data' + ' ' + filename + '.png'
+		if 'True' == commands.getoutput(command):
+			print 'Finish to generate image[' + filename + '.png' + ']'
+		else
+			print 'Fail to generate image[' + filename + '.png' + ']'
+
+	os.remove(filename + '.data')
+		
+	if UPLOAD:
+		date = time.strftime('%Y%m%d',time.localtime(time.time()))
+		timeInfo = time.strftime('%H%M%S',time.localtime(time.time()))
+		fileInfo = 'r' + VERSION + '_' + date + '_' + timeInfo
+		remotename = 'call_' + fileInfo +'.xls'
+		if uploadData(savename,remotename):
+			print "文件上传完毕.\n"
+		

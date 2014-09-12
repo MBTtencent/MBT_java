@@ -1,0 +1,4 @@
+Starting tracking the heap
+WARNING: Perftools heap leak checker is active -- Performance may suffer
+Dumping heap profile to /home/angel/paris/tprofiler/zone.hprof.0001.heap (Exiting)
+sizeof(DBAngelInfo): 316

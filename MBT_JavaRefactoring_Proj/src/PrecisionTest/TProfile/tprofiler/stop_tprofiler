@@ -1,0 +1,130 @@
+#!/usr/bin/env python
+#encoding:utf-8
+
+import os
+import sys
+import time
+#import subprocess
+import paramiko
+import ConfigParser
+
+IP = ''
+PORT = 0
+USER = ''
+PWD = ''
+WORKDIR = ''
+
+def uploadData(filename):
+	socks = (IP,PORT)
+	ssh = paramiko.Transport(socks)
+	ssh.connect(username = USER,password = PSW)
+	sftp = paramiko.SFTPClient.from_transport(ssh)
+	remote = WORKDIR + filename
+	sftp.put(filename,remote)
+	return True
+	
+config = ConfigParser.ConfigParser()
+config.read("config.ini")
+try:
+	BINARY = config.get('binary','path to binary')
+	ARGS = config.get('binary','args for stop')
+
+	CODEVERSION = config.get('version','code version')
+	PROJECT = config.get('version','project name').replace(' ','-')
+	stop_log = config.get('log','stop log')
+	
+	if 'yes' == config.get('cpu profile','cpu profiler'):
+		CPUPROFILE = config.get('result','cpu')
+	else:
+		CPUPROFILE = ''
+		
+	if 'yes' == config.get('heap profile','heap profiler'):
+		HEAPPROFILE = config.get('result','heap')
+		MAXDUMP = config.get('heap profile','max dump')
+	else:
+		HEAPPROFILE = ''
+		
+	if 'yes'== config.get('heap check','heap checker'):
+		HEAPCHECK = config.get('heap check','check')
+		HEAPLOG = config.get('log','heap check log')
+	else:
+		HEAPCHECK = ''
+	
+	if 'yes' == config.get('result','send to data server'):
+		UPLOAD = True
+		IP = config.get('data server','ip')
+		PORT = int(config.get('data server','port'))
+		USER = config.get('data server','user')
+		PSW = config.get('data server','psw')
+		WORKDIR = config.get('data server','work dir')
+	else:
+		UPLOAD = False
+	
+	if 'yes' == config.get('result','del temp file'):
+		DELTEMP = True
+	else:
+		DELTEMP = False
+	
+except ConfigParser.NoSectionError:
+	print '\nconfig.ini --> No SectionError.\n'
+	sys.exit(1)
+
+cmd = BINARY + ' ' + ARGS
+
+timeInfo = time.strftime('%Y-%m-%d %H:%M:%S --> ',time.localtime(time.time()))
+f = open(stop_log,'a')
+f.write(timeInfo + cmd + '\n')
+f.close()
+	
+if(os.system(cmd)):
+	print 'Stop failed. Please check binary path and args.\n'
+	sys.exit(1)
+
+date = time.strftime('%Y%m%d',time.localtime(time.time()))
+timeInfo = time.strftime('%H%M%S',time.localtime(time.time()))
+fileInfo = 'r' + CODEVERSION + '_' + date + '_' + timeInfo
+	
+if CPUPROFILE:
+	filename = PROJECT + '_cpu_' + fileInfo + '.txt'
+	cmd = 'pprof --text ' + BINARY + ' ' + CPUPROFILE + ' > ' + filename
+	if(os.system(cmd)):
+		print cmd + ' failed.\n'
+	elif UPLOAD and uploadData(filename) and DELTEMP:
+		os.remove(filename)
+		
+	
+	filename = PROJECT + '_cpu_' + fileInfo + '.gif'
+	cmd = 'pprof --gif ' + BINARY + ' ' + CPUPROFILE + ' > ' + filename
+	if(os.system(cmd)):
+		print cmd + ' failed.\n'
+	elif UPLOAD and uploadData(filename) and DELTEMP:
+		os.remove(filename)
+
+if HEAPPROFILE:
+	time.sleep(1)	#sleep 1 second waiting for dumping binary.hprof.0001.heap
+	for i in range(1,int(MAXDUMP) + 1):
+		if os.path.isfile(HEAPPROFILE + '.000' + str(i) +'.heap'):
+			filename = PROJECT + '_heap_' + str(i) + '_' + fileInfo + '.txt'
+			cmd = 'pprof --text ' + BINARY + ' ' + HEAPPROFILE + '.000' + str(i) +'.heap > ' + filename
+			if(os.system(cmd)):
+				print cmd + ' failed.\n'
+			elif UPLOAD and uploadData(filename) and DELTEMP:
+				os.remove(filename)
+			
+			filename = PROJECT + '_heap_' + str(i) + '_' + fileInfo + '.gif'
+			cmd = 'pprof --gif ' + BINARY + ' ' + HEAPPROFILE + '.000' + str(i) +'.heap > ' + filename
+			if os.system(cmd):
+				print cmd + ' failed.\n'
+			elif UPLOAD and uploadData(filename) and DELTEMP:
+				os.remove(filename)
+		else:
+			print HEAPPROFILE + '.000' + str(i) + '.heap does not exist!\n'
+
+if HEAPCHECK and UPLOAD:
+	filename = PROJECT + '_check_' + fileInfo + '.txt'
+	cmd = 'cat ' + HEAPLOG + ' > ' + filename
+	if os.system(cmd):
+		print cmd + ' failed.\n'
+	elif uploadData(filename) and DELTEMP:
+		os.remove(filename)
+

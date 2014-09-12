@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+#encoding:utf-8
+
+import os
+import sys
+#import subprocess
+import time
+import ConfigParser
+
+config = ConfigParser.ConfigParser()
+config.read("config.ini")
+try:
+	BINARY = config.get('binary','path to binary')
+	ARGS = config.get('binary','args for start')
+
+	start_log = config.get('log','start log')
+	
+	if 'yes' == config.get('cpu profile','cpu profiler'):
+		CPUPROFILE = config.get('result','cpu')
+		CPUPROFILE_FREQUENCY = config.get('cpu profile','frequency')
+		CPUPROFILE_REALTIME = config.get('cpu profile', 'realtime')
+	else:
+		CPUPROFILE = ''
+		CPUPROFILE_FREQUENCY = ''
+		CPUPROFILE_REALTIME = ''
+		
+	if 'yes' == config.get('heap profile','heap profiler'):
+		HEAPPROFILE = config.get('result','heap')
+	else:
+		HEAPPROFILE = ''
+		
+	if 'yes'== config.get('heap check','heap checker'):
+		HEAPCHECK = config.get('heap check','check')
+		PPROF = config.get('heap check','pprof')
+		HEAPLOG = config.get('log','heap check log')
+	else:
+		HEAPCHECK = ''
+		PPROF = ''
+	
+except ConfigParser.NoSectionError:
+	print '\nconfig.ini --> No SectionError.\n'
+	sys.exit(1)
+
+if CPUPROFILE and HEAPPROFILE:
+	if os.path.isfile('/usr/local/lib/libtcmalloc_and_profiler.so'):
+		PRE_LOAD = '/usr/local/lib/libtcmalloc_and_profiler.so'
+	else:
+		print '/usr/local/lib/libtcmalloc_and_profiler.so does not exist!\n'
+		sys.exit(1)
+	
+elif CPUPROFILE:
+	if os.path.isfile('/usr/local/lib/libprofiler.so'):
+		PRE_LOAD = '/usr/local/lib/libprofiler.so'
+	else:
+		print '/usr/local/lib/libprofiler.so does not exist!\n'
+		sys.exit(1)
+
+elif HEAPPROFILE:
+	if os.path.isfile('/usr/local/lib/libtcmalloc.so'):
+		PRE_LOAD = '/usr/local/lib/libtcmalloc.so'
+	else:
+		print '/usr/local/lib/libtcmalloc.so does not exist!\n'
+		sys.exit(1)
+
+if HEAPCHECK:
+	cmd = 'env LD_PRELOAD="' + PRE_LOAD  + '" ' + 'CPUPROFILE=' + CPUPROFILE + ' CPUPROFILE_FREQUENCY=' + CPUPROFILE_FREQUENCY  + ' CPUPROFILE_REALTIME=' + CPUPROFILE_REALTIME + ' HEAPPROFILE=' + HEAPPROFILE + ' HEAPCHECK=' + HEAPCHECK + ' PPROF_PATH=' + PPROF + ' '  + BINARY + ' ' + ARGS + ' > ' + HEAPLOG + ' 2>&1'
+
+else:
+	cmd = 'env LD_PRELOAD="' + PRE_LOAD  + '" ' + 'CPUPROFILE=' + CPUPROFILE + ' CPUPROFILE_FREQUENCY=' + CPUPROFILE_FREQUENCY  + ' CPUPROFILE_REALTIME=' + CPUPROFILE_REALTIME + ' HEAPPROFILE=' + HEAPPROFILE + ' HEAPCHECK=' + HEAPCHECK + ' PPROF_PATH=' + PPROF + ' '  + BINARY + ' ' + ARGS + ' >> start.log 2>&1'
+	
+print cmd
+
+timeInfo = time.strftime('%Y-%m-%d %H:%M:%S --> ',time.localtime(time.time()))
+f = open(start_log,'a')
+f.write(timeInfo + cmd + '\n')
+f.close()
+
+os.system(cmd)
+
+#if(os.system(cmd)):
+#	print 'Start failed. Please check binary path and args.\n'
+#	sys.exit(1)
+
